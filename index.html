@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR_Code</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <p>Enter text/URL</p>
+    <!-- Input for URL/Text -->
+    <input type="text" placeholder="Text or URL" id="qrText">
+
+    <!-- QR Code Image Container -->
+    <div id="imgBox" class="imgBox">
+        <img src="" id="qrImage">
+    </div>
+
+    <!-- Button to Generate QR Code -->
+    <button class="generate-btn" onclick="generateQR()">Generate QR Code</button>
+
+    <!-- Format Selection: PNG/JPG -->
+    <div class="format-selection">
+        <label>
+            <input type="radio" name="format" value="png" checked> PNG
+        </label>
+        <label>
+            <input type="radio" name="format" value="jpg"> JPG
+        </label>
+    </div>
+    
+
+    <!-- Download Button for QR Code with Tooltip -->
+    <button id="downloadButton" class="download-btn" style="display: none;" onclick="downloadQR()">Download Now
+        <span class="tooltip-text">Click to download QR code</span>
+    </button>
+</div>
+
+<script>
+let imgBox = document.getElementById("imgBox");
+let qrImage = document.getElementById("qrImage");
+let qrText = document.getElementById("qrText");
+let downloadButton = document.getElementById("downloadButton");
+
+let qrUrl = ''; // To store the generated QR code URL
+
+// Function to Generate the QR Code
+function generateQR() {
+    let format = document.querySelector('input[name="format"]:checked').value;
+
+    if (qrText.value.length > 0) {
+        // Generate the QR code URL with the selected format
+        qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + qrText.value + "&format=" + format;
+        qrImage.src = qrUrl; // Set the image source to the generated QR code
+
+        imgBox.classList.add("show-img"); // Show the QR code image
+
+        // Show the download button after the QR code is generated
+        downloadButton.style.display = 'block';
+        downloadButton.classList.add("pulse"); // Add pulse animation to the download button
+    } else {
+        qrText.classList.add('error');
+        setTimeout(() => {
+            qrText.classList.remove('error');
+        }, 1000);
+    }
+}
+
+// Function to Download the QR Code
+function downloadQR() {
+    // Fetch the QR code image as a blob
+    fetch(qrUrl)
+        .then(response => response.blob())
+        .then(blob => {
+            // Create a URL for the blob
+            const blobUrl = URL.createObjectURL(blob);
+            
+            // Create an anchor element to trigger the download
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            
+            // Set the download attribute with the correct file name
+            let format = document.querySelector('input[name="format"]:checked').value;
+            link.download = 'qrcode.' + format;
+            
+            // Append the link, click it, and remove it from the document
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        })
+        .catch(error => console.error('Error downloading the QR code:', error));
+}
+</script>
+</body>
+</html>
